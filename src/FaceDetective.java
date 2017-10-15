@@ -24,13 +24,14 @@ public class FaceDetective extends javax.swing.JFrame {
 ///
 	private DaemonThread myThread = null;
     int count = 0;
+    int test0;
     VideoCapture webSource = null;
     Mat frame = new Mat();
     int test;
     MatOfByte mem = new MatOfByte();
     CascadeClassifier faceDetector = new CascadeClassifier(FaceDetective.class.getResource("haarcascade_frontalface_alt.xml").getPath().substring(1));
     MatOfRect faceDetections = new MatOfRect();
-///    
+///
 
     class DaemonThread implements Runnable {
 
@@ -149,7 +150,7 @@ public class FaceDetective extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         myThread.runnable = false;            // stop thread
-        jButton2.setEnabled(false);   // activate start button 
+        jButton2.setEnabled(false);   // activate start button
         jButton1.setEnabled(true);     // deactivate stop button
 
         webSource.release();  // stop caturing fron cam
@@ -179,7 +180,7 @@ public class FaceDetective extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
