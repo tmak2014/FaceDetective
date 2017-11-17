@@ -22,7 +22,7 @@ public class FaceDetective extends javax.swing.JFrame {
 ///
 	private DaemonThread myThread = null;
     int count = 0;
-    int test055;
+    int t5;
     VideoCapture webSource = null;
     Mat frame = new Mat();
     int test;
