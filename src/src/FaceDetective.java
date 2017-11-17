@@ -27,7 +27,7 @@ public class FaceDetective extends javax.swing.JFrame {
     Mat frame = new Mat();
     int test;
     MatOfByte mem = new MatOfByte();
-    CascadeClassifier faceDetector = new CascadeClassifier(FaceDetective.class.getResource("haarcascade_frontalface_alt.xml").getPath().substring(1));
+    CascadeClassifier faceDetector = new CascadeClassifier(FaceDetective.class.getResource("haarcascade_eye.xml").getPath().substring(1));
     MatOfRect faceDetections = new MatOfRect();
 ///
 
