@@ -25,9 +25,11 @@ public class FaceDetective extends javax.swing.JFrame {
     int t5;
     VideoCapture webSource = null;
     Mat frame = new Mat();
-    int test;
+    Mat gray_img;
     MatOfByte mem = new MatOfByte();
-    CascadeClassifier faceDetector = new CascadeClassifier(FaceDetective.class.getResource("haarcascade_eye.xml").getPath().substring(1));
+	Mat circles = new Mat();
+
+    CascadeClassifier faceDetector = new CascadeClassifier(FaceDetective.class.getResource("haarcascade_eye_tree_eyeglasses.xml").getPath().substring(1));
     MatOfRect faceDetections = new MatOfRect();
 ///
 
@@ -41,22 +43,26 @@ public class FaceDetective extends javax.swing.JFrame {
                 while (runnable) {
                     if (webSource.grab()) {
                         try {
-                            webSource.retrieve(frame);
+                           webSource.retrieve(frame);
                             Graphics g = jPanel1.getGraphics();
-                            faceDetector.detectMultiScale(frame, faceDetections);
+                           faceDetector.detectMultiScale(frame, faceDetections);
                             for (Rect rect : faceDetections.toArray()) {
-                               // System.out.println("ttt");
-                                Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-                                        new Scalar(0, 255,0));
-                            }
+                              // System.out.println("ttt");
+                               Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
+                                      new Scalar(0, 255,0));
+                          }
                             Highgui.imencode(".bmp", frame, mem);
                             Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
-                            BufferedImage buff = (BufferedImage) im;
-                            if (g.drawImage(buff, 0, 0, getWidth(), getHeight()-150 , 0, 0, buff.getWidth(), buff.getHeight(), null)) {
-                                if (runnable == false) {
-                                    System.out.println("Paused ..... ");
-                                    this.wait();
-                                }
+//                           Imgproc.cvtColor(frame, gray_img,Imgproc.COLOR_RGB2GRAY);
+                    		// ハフ変換で円検出
+//                    		Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 10, 160, 50, 10, 20);
+//                    		fncDrwCircles(circles,frame);
+
+                    		BufferedImage buff = (BufferedImage) im;
+                         if (g.drawImage(buff, 0, 0, getWidth(), getHeight()-150 , 0, 0, buff.getWidth(), buff.getHeight(), null)) {
+                               if (runnable == false) {                                   System.out.println("Paused ..... ");
+                                   this.wait();
+                               }
                             }
                         } catch (Exception ex) {
                             System.out.println("Error");
@@ -210,4 +216,20 @@ public class FaceDetective extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
+
+
+    private void fncDrwCircles(Mat circles ,Mat img) {
+  	  double[] data;
+  	  double rho;
+  	  Point pt = new Point();
+  	  for (int i = 0; i < circles.cols(); i++){
+  	    data = circles.get(0, i);
+  	    pt.x = data[0];
+  	    pt.y = data[1];
+  	    rho = data[2];
+  	    Core.circle(img, pt, (int)rho, new Scalar(255, 0, 0),2);
+  	  }
+  	}
 }
+
+
