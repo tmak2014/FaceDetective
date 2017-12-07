@@ -16,6 +16,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
 public class FaceDetective extends javax.swing.JFrame {
@@ -25,7 +26,7 @@ public class FaceDetective extends javax.swing.JFrame {
     int t5;
     VideoCapture webSource = null;
     Mat frame = new Mat();
-    Mat gray_img;
+    Mat gray_img = new Mat();
     MatOfByte mem = new MatOfByte();
 	Mat circles = new Mat();
 
@@ -45,18 +46,19 @@ public class FaceDetective extends javax.swing.JFrame {
                         try {
                            webSource.retrieve(frame);
                             Graphics g = jPanel1.getGraphics();
-                           faceDetector.detectMultiScale(frame, faceDetections);
-                            for (Rect rect : faceDetections.toArray()) {
-                              // System.out.println("ttt");
-                               Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-                                      new Scalar(0, 255,0));
-                          }
-                            Highgui.imencode(".bmp", frame, mem);
-                            Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
-//                           Imgproc.cvtColor(frame, gray_img,Imgproc.COLOR_RGB2GRAY);
-                    		// ハフ変換で円検出
-//                    		Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 10, 160, 50, 10, 20);
-//                    		fncDrwCircles(circles,frame);
+                          faceDetector.detectMultiScale(frame, faceDetections);
+                          for (Rect rect : faceDetections.toArray()) {
+                             // System.out.println("ttt");
+                              Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
+                                  new Scalar(0, 255,0));
+                         }
+                         Imgproc.cvtColor(frame, gray_img,Imgproc.COLOR_RGB2GRAY);
+                         // ハフ変換で円検出
+                         Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 10, 160, 50, 10, 20);
+                         fncDrwCircles(circles,frame);
+
+                         Highgui.imencode(".bmp", frame, mem);
+                         Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
 
                     		BufferedImage buff = (BufferedImage) im;
                          if (g.drawImage(buff, 0, 0, getWidth(), getHeight()-150 , 0, 0, buff.getWidth(), buff.getHeight(), null)) {
@@ -64,8 +66,10 @@ public class FaceDetective extends javax.swing.JFrame {
                                    this.wait();
                                }
                             }
-                        } catch (Exception ex) {
+                        }
+                        catch (Exception ex) {
                             System.out.println("Error");
+                            ex.printStackTrace();
                         }
                     }
                 }
