@@ -14,20 +14,26 @@ import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
 public class FaceDetective extends javax.swing.JFrame {
 ///
-	private DaemonThread myThread = null;
+    private DaemonThread myThread = null;
     int count = 0;
     int t5;
     VideoCapture webSource = null;
     Mat frame = new Mat();
-    int test;
+    Mat gray_img = new Mat();
     MatOfByte mem = new MatOfByte();
-    CascadeClassifier faceDetector = new CascadeClassifier(FaceDetective.class.getResource("haarcascade_eye.xml").getPath().substring(1));
+    Mat circles = new Mat();
+
+    Mat eye_img = new Mat();
+
+    CascadeClassifier faceDetector = new CascadeClassifier(FaceDetective.class.getResource("haarcascade_eye_tree_eyeglasses.xml").getPath().substring(1));
     MatOfRect faceDetections = new MatOfRect();
 ///
 
@@ -45,10 +51,22 @@ public class FaceDetective extends javax.swing.JFrame {
                             Graphics g = jPanel1.getGraphics();
                             faceDetector.detectMultiScale(frame, faceDetections);
                             for (Rect rect : faceDetections.toArray()) {
-                               // System.out.println("ttt");
                                 Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
                                         new Scalar(0, 255,0));
+
+                                // 目のイメージ切り出し
+                                eye_img = new Mat(frame, rect);
+                                // グレースケール化
+                                Imgproc.cvtColor(eye_img, gray_img, Imgproc.COLOR_RGB2GRAY);
+                                // 平滑化を行います。 これがないと誤検出が起こりやすくなります。
+                                Imgproc.GaussianBlur(gray_img, gray_img, new Size(9, 9), 2, 2);
+                                // ハフ変換で円検出
+                                // Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 10, 160, 50, 10, 20);
+                                Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 10, 80, 40, 10, rect.height/2);
+
+                                drowPupils(circles, frame, rect);
                             }
+
                             Highgui.imencode(".bmp", frame, mem);
                             Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
                             BufferedImage buff = (BufferedImage) im;
@@ -60,6 +78,7 @@ public class FaceDetective extends javax.swing.JFrame {
                             }
                         } catch (Exception ex) {
                             System.out.println("Error");
+                            ex.printStackTrace();
                         }
                     }
                 }
@@ -210,4 +229,36 @@ public class FaceDetective extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
+
+    private void fncDrwCircles(Mat circles ,Mat img) {
+        double[] data;
+        double rho;
+        Point pt = new Point();
+        for (int i = 0; i < circles.cols(); i++){
+            data = circles.get(0, i);
+            pt.x = data[0];
+            pt.y = data[1];
+            rho = data[2];
+            Core.circle(img, pt, (int)rho, new Scalar(0, 100, 255), 2);
+            
+            // 中心
+            Core.circle(img, pt, 3, new Scalar(0, 0, 255), -1);
+        }
+    }
+
+    private void drowPupils(Mat circles, Mat img, Rect detectedRect) {
+        double[] data;
+        double rho;
+        Point pt = new Point();
+        for (int i = 0; i < circles.cols(); i++){
+            data = circles.get(0, i);
+            pt.x = data[0] + detectedRect.x;
+            pt.y = data[1] + detectedRect.y;
+            rho = data[2];
+            Core.circle(img, pt, (int)rho, new Scalar(0, 100, 255), 2);
+            
+            // 中心
+            Core.circle(img, pt, 3, new Scalar(0, 0, 255), -1);
+        }
+    }
 }
