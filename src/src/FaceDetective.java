@@ -62,7 +62,7 @@ public class FaceDetective extends javax.swing.JFrame {
                                 Imgproc.GaussianBlur(gray_img, gray_img, new Size(9, 9), 2, 2);
                                 // ÉnÉtïœä∑Ç≈â~åüèo
                                 // Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 10, 160, 50, 10, 20);
-                                Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 10, 80, 40, 10, rect.height/2);
+                                Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 1, 20, 30, 20, 10, rect.height/2);
 
                                 drowPupils(circles, frame, rect);
                             }
