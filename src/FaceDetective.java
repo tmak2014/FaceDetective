@@ -28,6 +28,8 @@ public class FaceDetective extends javax.swing.JFrame {
     Mat frame = new Mat();
     Mat gray_img = new Mat();
     MatOfByte mem = new MatOfByte();
+    MatOfByte mem2 = new MatOfByte();
+
 	Mat circles = new Mat();
 
     CascadeClassifier faceDetector = new CascadeClassifier(FaceDetective.class.getResource("haarcascade_eye_tree_eyeglasses.xml").getPath().substring(1));
@@ -46,6 +48,7 @@ public class FaceDetective extends javax.swing.JFrame {
                         try {
                            webSource.retrieve(frame);
                             Graphics g = jPanel1.getGraphics();
+                            Graphics h = jPanel2.getGraphics();
                           faceDetector.detectMultiScale(frame, faceDetections);
                           for (Rect rect : faceDetections.toArray()) {
                              // System.out.println("ttt");
@@ -53,11 +56,16 @@ public class FaceDetective extends javax.swing.JFrame {
                                   new Scalar(0, 255,0));
                          }
                          Imgproc.cvtColor(frame, gray_img,Imgproc.COLOR_RGB2GRAY);
+                         Imgproc.threshold(gray_img, gray_img, 0.0, 255.0,
+                        		 Imgproc.THRESH_BINARY_INV  );
                          // ハフ変換で円検出
                          Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 10, 160, 50, 10, 20);
                          fncDrwCircles(circles,frame);
 
                          Highgui.imencode(".bmp", frame, mem);
+                         Highgui.imencode(".bmp", gray_img, mem2);
+
+                         
                          Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
 
                     		BufferedImage buff = (BufferedImage) im;
@@ -66,6 +74,11 @@ public class FaceDetective extends javax.swing.JFrame {
                                    this.wait();
                                }
                             }
+                         if (h.drawImage(ImageIO.read(new ByteArrayInputStream(mem2.toArray())), 0, 0, getWidth(), getHeight()-150 , 0, 0, buff.getWidth(), buff.getHeight(), null)) {
+                             if (runnable == false) {                                   System.out.println("Paused ..... ");
+                                 this.wait();
+                             }
+                          }
                         }
                         catch (Exception ex) {
                             System.out.println("Error");
@@ -96,6 +109,8 @@ public class FaceDetective extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
@@ -112,6 +127,17 @@ public class FaceDetective extends javax.swing.JFrame {
             .addGap(0, 376, Short.MAX_VALUE)
         );
 
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 50, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 376, Short.MAX_VALUE)
+        );
+        
         jButton1.setText("Start");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -134,6 +160,7 @@ public class FaceDetective extends javax.swing.JFrame {
                 .addGap(24, 24, 24)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGap(255, 255, 255)
                 .addComponent(jButton1)
@@ -147,6 +174,7 @@ public class FaceDetective extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
@@ -219,6 +247,7 @@ public class FaceDetective extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     // End of variables declaration//GEN-END:variables
 
 
