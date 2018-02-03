@@ -57,7 +57,7 @@ public class FaceDetective extends javax.swing.JFrame {
                          }
                          Imgproc.cvtColor(frame, gray_img,Imgproc.COLOR_RGB2GRAY);
                          Imgproc.threshold(gray_img, gray_img, 0.0, 255.0,
-                        		 Imgproc.THRESH_BINARY_INV  );
+                        		 Imgproc.THRESH_BINARY_INV);
                          // ハフ変換で円検出
                          Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 10, 160, 50, 10, 20);
                          fncDrwCircles(circles,frame);
@@ -65,7 +65,7 @@ public class FaceDetective extends javax.swing.JFrame {
                          Highgui.imencode(".bmp", frame, mem);
                          Highgui.imencode(".bmp", gray_img, mem2);
 
-                         
+
                          Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
 
                     		BufferedImage buff = (BufferedImage) im;
@@ -137,7 +137,7 @@ public class FaceDetective extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 376, Short.MAX_VALUE)
         );
-        
+
         jButton1.setText("Start");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
