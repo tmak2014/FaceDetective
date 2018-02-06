@@ -27,11 +27,13 @@ public class FaceDetective extends javax.swing.JFrame {
     int t5;
     VideoCapture webSource = null;
     Mat frame = new Mat();
-    Mat gray_img = new Mat();
     MatOfByte mem = new MatOfByte();
-    Mat circles = new Mat();
+    MatOfByte mem2 = new MatOfByte();
+    MatOfByte mem3 = new MatOfByte();
 
     Mat eye_img = new Mat();
+    Mat gray_img = new Mat();
+    Mat threshold_img = new Mat();
 
     CascadeClassifier faceDetector = new CascadeClassifier(FaceDetective.class.getResource("haarcascade_eye_tree_eyeglasses.xml").getPath().substring(1));
     MatOfRect faceDetections = new MatOfRect();
@@ -49,28 +51,60 @@ public class FaceDetective extends javax.swing.JFrame {
                         try {
                             webSource.retrieve(frame);
                             Graphics g = jPanel1.getGraphics();
+                            Graphics foundGraphics = eyePanel.getGraphics();
+                            Graphics foundGraphics2 = eyePanel2.getGraphics();
                             faceDetector.detectMultiScale(frame, faceDetections);
                             for (Rect rect : faceDetections.toArray()) {
-                                Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-                                        new Scalar(0, 255,0));
+//                                System.out.println("rect.x:" + rect.x + ", rect.y:" + rect.y);
+//                                System.out.println("frame.width()/2:" + frame.width()/2 + ", frame.height()/2:" + frame.height()/2);
+                                // 右目のみ見る
+                                if (rect.x + rect.width < frame.width()/2 /* && rect.y + rect.height < frame.height()/2*/) {
+                                    Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
+                                            new Scalar(0, 255,0));
 
-                                // 目のイメージ切り出し
-                                eye_img = new Mat(frame, rect);
-                                // グレースケール化
-                                Imgproc.cvtColor(eye_img, gray_img, Imgproc.COLOR_RGB2GRAY);
-                                // 平滑化を行います。 これがないと誤検出が起こりやすくなります。
-                                Imgproc.GaussianBlur(gray_img, gray_img, new Size(9, 9), 2, 2);
-                                // ハフ変換で円検出
-                                // Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 10, 160, 50, 10, 20);
-                                Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 1, 20, 30, 20, 10, rect.height/2);
-
-                                drowPupils(circles, frame, rect);
+                                    // 目のイメージ切り出し
+                                    eye_img = new Mat(frame, rect);
+                                    
+                                    // GRAY and THRESHOLD.
+                                    Imgproc.cvtColor(eye_img, gray_img, Imgproc.COLOR_RGB2GRAY);
+                                    Imgproc.threshold(gray_img, threshold_img, 10.0, 255.0, Imgproc.THRESH_BINARY);
+                                    // One eye only... break.
+                                    break;
+                                }
                             }
 
                             Highgui.imencode(".bmp", frame, mem);
                             Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
                             BufferedImage buff = (BufferedImage) im;
-                            if (g.drawImage(buff, 0, 0, getWidth(), getHeight()-150 , 0, 0, buff.getWidth(), buff.getHeight(), null)) {
+//                            if (g.drawImage(buff, 0, 0, getWidth(), getHeight()-150 , 0, 0, buff.getWidth(), buff.getHeight(), null)) {
+                            if (g.drawImage(buff, 0, 0, buff.getWidth(), buff.getHeight() , 0, 0, buff.getWidth(), buff.getHeight(), null)) {
+                                if (runnable == false) {
+                                    System.out.println("Paused ..... ");
+                                    this.wait();
+                                }
+                            }
+
+                            Highgui.imencode(".bmp", threshold_img, mem2);
+                            Image foundImage = ImageIO.read(new ByteArrayInputStream(mem2.toArray()));
+                            BufferedImage foundBuff = (BufferedImage) foundImage;
+                            foundGraphics.clearRect(0, 0, 500, 500);
+                            if (foundGraphics.drawImage(foundBuff,
+                                    0, 0, foundBuff.getWidth(), foundBuff.getHeight(),
+                                    0, 0, foundBuff.getWidth(), foundBuff.getHeight(),
+                                    null)) {
+                                if (runnable == false) {
+                                    System.out.println("Paused ..... ");
+                                    this.wait();
+                                }
+                            }
+                            Highgui.imencode(".bmp", gray_img, mem3);
+                            Image foundImage2 = ImageIO.read(new ByteArrayInputStream(mem3.toArray()));
+                            BufferedImage foundBuff2 = (BufferedImage) foundImage2;
+                            foundGraphics2.clearRect(0, 0, 500, 500);
+                            if (foundGraphics2.drawImage(foundBuff2,
+                                    0, 0, foundBuff2.getWidth(), foundBuff2.getHeight(),
+                                    0, 0, foundBuff2.getWidth(), foundBuff2.getHeight(),
+                                    null)) {
                                 if (runnable == false) {
                                     System.out.println("Paused ..... ");
                                     this.wait();
@@ -105,6 +139,10 @@ public class FaceDetective extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
+        
+        eyePanel = new javax.swing.JPanel();
+        eyePanel2 = new javax.swing.JPanel();
+        
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
@@ -119,6 +157,28 @@ public class FaceDetective extends javax.swing.JFrame {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 376, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout eyePanelLayout = new javax.swing.GroupLayout(eyePanel);
+        eyePanel.setLayout(eyePanelLayout);
+        eyePanelLayout.setHorizontalGroup(
+            eyePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        eyePanelLayout.setVerticalGroup(
+            eyePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout eyePanelLayout2 = new javax.swing.GroupLayout(eyePanel2);
+        eyePanel2.setLayout(eyePanelLayout2);
+        eyePanelLayout2.setHorizontalGroup(
+            eyePanelLayout2.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        eyePanelLayout2.setVerticalGroup(
+            eyePanelLayout2.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
         );
 
         jButton1.setText("Start");
@@ -143,6 +203,8 @@ public class FaceDetective extends javax.swing.JFrame {
                 .addGap(24, 24, 24)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
+            .addComponent(eyePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(eyePanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGap(255, 255, 255)
                 .addComponent(jButton1)
@@ -154,8 +216,12 @@ public class FaceDetective extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+//                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createSequentialGroup()
+                    .addComponent(eyePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(eyePanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
@@ -228,37 +294,7 @@ public class FaceDetective extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel eyePanel;
+    private javax.swing.JPanel eyePanel2;
     // End of variables declaration//GEN-END:variables
-
-    private void fncDrwCircles(Mat circles ,Mat img) {
-        double[] data;
-        double rho;
-        Point pt = new Point();
-        for (int i = 0; i < circles.cols(); i++){
-            data = circles.get(0, i);
-            pt.x = data[0];
-            pt.y = data[1];
-            rho = data[2];
-            Core.circle(img, pt, (int)rho, new Scalar(0, 100, 255), 2);
-            
-            // 中心
-            Core.circle(img, pt, 3, new Scalar(0, 0, 255), -1);
-        }
-    }
-
-    private void drowPupils(Mat circles, Mat img, Rect detectedRect) {
-        double[] data;
-        double rho;
-        Point pt = new Point();
-        for (int i = 0; i < circles.cols(); i++){
-            data = circles.get(0, i);
-            pt.x = data[0] + detectedRect.x;
-            pt.y = data[1] + detectedRect.y;
-            rho = data[2];
-            Core.circle(img, pt, (int)rho, new Scalar(0, 100, 255), 2);
-            
-            // 中心
-            Core.circle(img, pt, 3, new Scalar(0, 0, 255), -1);
-        }
-    }
 }
