@@ -27,6 +27,9 @@ public class FaceDetective extends javax.swing.JFrame {
     VideoCapture webSource = null;
     Mat frame = new Mat();
     Mat gray_img = new Mat();
+    Mat sub_frameR = new Mat();
+    Mat sub_frameL = new Mat();
+    Rect rect2;
     MatOfByte mem = new MatOfByte();
     MatOfByte mem2 = new MatOfByte();
 
@@ -50,20 +53,31 @@ public class FaceDetective extends javax.swing.JFrame {
                             Graphics g = jPanel1.getGraphics();
                             Graphics h = jPanel2.getGraphics();
                           faceDetector.detectMultiScale(frame, faceDetections);
+                          Imgproc.cvtColor(frame, gray_img,Imgproc.COLOR_RGB2GRAY);
+
                           for (Rect rect : faceDetections.toArray()) {
                              // System.out.println("ttt");
                               Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
                                   new Scalar(0, 255,0));
+                              Core.rectangle(gray_img, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
+                                      new Scalar(0, 255,0));
                          }
-                         Imgproc.cvtColor(frame, gray_img,Imgproc.COLOR_RGB2GRAY);
                          Imgproc.threshold(gray_img, gray_img, 0.0, 255.0,
                         		 Imgproc.THRESH_BINARY_INV);
-                         // ハフ変換で円検出
-                         Imgproc.HoughCircles(gray_img, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 10, 160, 50, 10, 20);
-                         fncDrwCircles(circles,frame);
 
+                         rect2 =new Rect(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height);
+
+                         Mat im2 = new Mat(gray_img, rect2);
+                /*
+                         for(int y = 0; y < gray_img.rows(); ++y) {
+                        		for(int x = 0; x < gray_img.cols(); ++x){
+
+
+                        		}
+                        	}
+                  */
                          Highgui.imencode(".bmp", frame, mem);
-                         Highgui.imencode(".bmp", gray_img, mem2);
+                         Highgui.imencode(".bmp", im2, mem2);
 
 
                          Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
@@ -72,7 +86,7 @@ public class FaceDetective extends javax.swing.JFrame {
                          if (g.drawImage(buff, 0, 0, getWidth(), getHeight()-150 , 0, 0, buff.getWidth(), buff.getHeight(), null)) {
                                if (runnable == false) {                                   System.out.println("Paused ..... ");
                                    this.wait();
-                               }
+                             }
                             }
                          if (h.drawImage(ImageIO.read(new ByteArrayInputStream(mem2.toArray())), 0, 0, getWidth(), getHeight()-150 , 0, 0, buff.getWidth(), buff.getHeight(), null)) {
                              if (runnable == false) {                                   System.out.println("Paused ..... ");
